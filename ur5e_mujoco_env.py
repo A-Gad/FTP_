@@ -7,23 +7,58 @@ class UR5eMujocoEnv(gym.Env):
     """Custom Environment that follows gymnasium interface"""
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
 
-    def __init__(self, xml_file="ur5e.xml", render_mode=None):
+    def __init__(
+        self,
+        xml_file="ur5e.xml",
+        render_mode=None,
+        initial_qpos=None,
+        max_episode_steps=500,
+    ):
         super().__init__()
         self.render_mode = render_mode
-        
-        # 1. Load the MuJoCo model and data from your newly created XML
+
         self.model = mujoco.MjModel.from_xml_path(xml_file)
         self.data = mujoco.MjData(self.model)
         
-        # 2. Define the Action Space (6 continuous joint commands for UR5e)
-        # Using -3.14 to 3.14 (pi) radians as the max action range
+        if self.model.nq != 6 or self.model.nv != 6 or self.model.nu != 6:
+            raise ValueError(
+                "UR5eMujocoEnv requires a six-joint, six-actuator MuJoCo model "
+                f"(nq={self.model.nq}, nv={self.model.nv}, nu={self.model.nu})"
+            )
+        if max_episode_steps <= 0:
+            raise ValueError("max_episode_steps must be positive")
+
+        if initial_qpos is None:
+            initial_qpos = np.zeros(self.model.nq, dtype=np.float64)
+        else:
+            initial_qpos = np.asarray(initial_qpos, dtype=np.float64)
+        if initial_qpos.shape != (self.model.nq,):
+            raise ValueError(
+                f"initial_qpos must have shape ({self.model.nq},), "
+                f"got {initial_qpos.shape}"
+            )
+
+        self.initial_qpos = initial_qpos.copy()
+        self.max_episode_steps = int(max_episode_steps)
+        self.step_count = 0
+        self.terminated = False
+        self.truncated = False
+
+        mujoco.mj_forward(self.model, self.data)
+        self.target_position = self.data.site("target").xpos.copy()
+        self.target_quat = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float64)
+        self.obstacle_positions = np.array(
+            [
+                self.data.geom("obs_1").xpos,
+                self.data.geom("obs_2").xpos,
+                self.data.geom("obs_3").xpos,
+            ],
+            dtype=np.float64,
+        )
+
         self.action_space = spaces.Box(low=-np.pi, high=np.pi, shape=(6,), dtype=np.float32)
-        
-        # 3. Define the Observation Space (25-D continuous state to match your paper)
-        # Assuming normalized bounds between -inf and inf for simplicity
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(25,), dtype=np.float32)
 
-        # Optional: Initialize a viewer if rendering is requested
         self.viewer = None
 
     def _get_obs(self):
@@ -70,8 +105,8 @@ class UR5eMujocoEnv(gym.Env):
         # 1. Reset the simulation to its initial state
         mujoco.mj_resetData(self.model, self.data)
         
-        # 2. Apply your random target/obstacle sampling here (Appendix A.4)
-        # e.g., self.data.body("target_name").xpos = [new_x, new_y, new_z]
+        # 2. Apply andom target/obstacle sampling (Appendix A.4)
+        
         
         # 3. Forward the simulation once to update the kinematics with the new setup
         mujoco.mj_forward(self.model, self.data)
