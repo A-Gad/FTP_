@@ -25,3 +25,6 @@ Thumbs.db
 *.gif
 *.mp4
 *.log
+
+# Training checkpoints and experiment outputs
+runs/

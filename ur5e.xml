@@ -23,6 +23,9 @@
     <!-- Mocap bodies allow the environment to reposition objects between episodes. -->
     <body name="target_body" mocap="true" pos="0.5 0.4 0.5">
       <site name="target" pos="0 0 0" size="0.03" rgba="0 1 0 1"/>
+      <geom name="target_axis_x" type="capsule" fromto="0 0 0 0.12 0 0" size="0.008" rgba="1 0 0 1"/>
+      <geom name="target_axis_y" type="capsule" fromto="0 0 0 0 0.12 0" size="0.008" rgba="0 1 0 1"/>
+      <geom name="target_axis_z" type="capsule" fromto="0 0 0 0 0 0.12" size="0.008" rgba="0 0 1 1"/>
     </body>
     <body name="obs_1_body" mocap="true" pos="0.5 0.3 0.1">
       <geom name="obs_1" type="sphere" size="0.04" pos="0 0 0" rgba="0.7 0.4 1 1"/>
@@ -73,11 +76,11 @@
     <frame quat="0 0 0 -1"/>
   </worldbody>
   <actuator>
-    <position joint="shoulder_pan_joint" ctrlrange="-3.1415 3.1415" ctrllimited="true" kp="2000" kv="200"/>
-    <position joint="shoulder_lift_joint" ctrlrange="-3.1415 3.1415" ctrllimited="true" kp="2000" kv="200"/>
+    <position joint="shoulder_pan_joint" ctrlrange="-6.28319 6.28319" ctrllimited="true" kp="2000" kv="200"/>
+    <position joint="shoulder_lift_joint" ctrlrange="-6.28319 6.28319" ctrllimited="true" kp="2000" kv="200"/>
     <position joint="elbow_joint" ctrlrange="-3.1415 3.1415" ctrllimited="true" kp="2000" kv="200"/>
-    <position joint="wrist_1_joint" ctrlrange="-3.1415 3.1415" ctrllimited="true" kp="2000" kv="200"/>
-    <position joint="wrist_2_joint" ctrlrange="-3.1415 3.1415" ctrllimited="true" kp="2000" kv="200"/>
-    <position joint="wrist_3_joint" ctrlrange="-3.1415 3.1415" ctrllimited="true" kp="2000" kv="200"/>
+    <position joint="wrist_1_joint" ctrlrange="-6.28319 6.28319" ctrllimited="true" kp="2000" kv="200"/>
+    <position joint="wrist_2_joint" ctrlrange="-6.28319 6.28319" ctrllimited="true" kp="2000" kv="200"/>
+    <position joint="wrist_3_joint" ctrlrange="-6.28319 6.28319" ctrllimited="true" kp="2000" kv="200"/>
 </actuator>
 </mujoco>
